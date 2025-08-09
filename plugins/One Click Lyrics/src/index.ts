@@ -21,20 +21,18 @@ const lyricsNotAvailableLabel = "No lyrics available";
 const buttonId = "oneClickLyricsButton";
 const volumeContainerId = "._sliderContainer_15490c0";
 
-observePromise(unloads, volumeContainerId).then((volumeContainer) => {
+observePromise(unloads, volumeContainerId).then(async (volumeContainer) => {
     if (!volumeContainer || addedElement) return;
 
     addedElement = createButton();
     (volumeContainer as HTMLDivElement).before(addedElement);
 
     // On plugin load, check current song and update button state using lyrics from redux store
-    const state = redux.store.getState();
-    const currentTrack = state.playQueue.elements[state.playQueue.currentIndex];
-    const currentTrackId = currentTrack?.mediaItemId;
+    const mediaItem = await MediaItem.fromPlaybackContext();
     
-    MediaItem.fromId(currentTrackId).then(async (mediaItem) => {
-        await toggleOneClickLyricsButton(mediaItem as MediaItem);
-    });
+    if (!mediaItem) return;
+    
+    await toggleOneClickLyricsButton(mediaItem as MediaItem);
 });
 
 function createButton(): HTMLButtonElement {
@@ -45,6 +43,7 @@ function createButton(): HTMLButtonElement {
     wrapper.title = lyricsLabel;
     wrapper.type = "button";
     wrapper.style.alignItems = "center";
+    wrapper.disabled = true;
 
     // Set the onclick action: open the song details, then click on the lyrics tab
     wrapper.addEventListener("click", () => {
@@ -88,8 +87,6 @@ async function toggleOneClickLyricsButton(mediaItem: MediaItem) {
 }
 
 unloads.add(() => {
-    if (addedElement) {
-        addedElement.remove();
-    }
+    addedElement?.remove();
     addedElement = null;
 });
