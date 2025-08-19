@@ -21,7 +21,7 @@ function updateSliderVolume(slider: HTMLInputElement, volume: number): void {
     if (volumeText) {
         volumeText.textContent = `${volume}`;
     }
-}
+};
 
 // Create the horizontal volume slider
 function createVolumeSlider(): HTMLInputElement {
@@ -79,31 +79,14 @@ function createVolumeSlider(): HTMLInputElement {
         redux.actions["playbackControls/SET_VOLUME"]({ volume });
     });
 
-    // Change volume with mouse wheel
-    slider.addEventListener("wheel", (e) => {
-        const step = 10;
-        const currentVolume = parseInt(slider.value);
-        let newVolume = currentVolume;
-
-        if (e.deltaY < 0) {
-            newVolume = Math.min(100, currentVolume + step);
-        } else {
-            newVolume = Math.max(0, currentVolume - step);
-        }
-
-        if (newVolume !== currentVolume) {
-            updateSliderVolume(slider, newVolume);
-            redux.actions["playbackControls/SET_VOLUME"]({ volume: newVolume });
-        }
-    });
-
     return slider;
-}
+};
 
 observePromise(unloads, volumeContainerId).then((volumeContainer) => {
     if (volumeSlider) return;
 
     volumeSlider = createVolumeSlider();
+    ToggleMouseWheelControl(settings.enableMouseWheel);
     
     // Volume text display element
     volumeText = document.createElement('span');
@@ -145,8 +128,35 @@ unloads.add(() => {
     customSliderStyles = null;
 });
 
+function handleMouseWheel(event: WheelEvent) {
+    if (!volumeSlider) return;
+    const step = 10;
+    const currentVolume = parseInt(volumeSlider.value);
+    let newVolume = currentVolume;
+
+    if (event.deltaY < 0) {
+        newVolume = Math.min(100, currentVolume + step);
+    } else {
+        newVolume = Math.max(0, currentVolume - step);
+    }
+
+    if (newVolume !== currentVolume) {
+        updateSliderVolume(volumeSlider, newVolume);
+        redux.actions["playbackControls/SET_VOLUME"]({ volume: newVolume });
+    }
+};
+
 //// Settings related functions 
 export function ToggleVolumeTextVisibility(checked?: boolean) {
     if (!volumeText) return;
     checked ? volumeText.style.removeProperty("display") : volumeText.style.display = "none";
-}
+};
+
+export function ToggleMouseWheelControl(checked?: boolean) {
+    if (!volumeSlider) return;
+    if (checked) {
+        volumeSlider.addEventListener("wheel", handleMouseWheel);
+    } else {
+        volumeSlider.removeEventListener("wheel", handleMouseWheel);
+    }
+};
