@@ -1,20 +1,27 @@
 import { Tracer, type LunaUnload } from "@luna/core";
 import { redux, observePromise } from "@luna/lib";
+import { settings, Settings } from "./Settings";
 
 export const { errSignal, trace } = Tracer("[HorizontalVolumeSlider]");
 export const unloads = new Set<LunaUnload>();
+export { Settings };
 
+let volumeText: HTMLSpanElement | null = null;
 let volumeSlider: HTMLInputElement | null = null;
 let defaultSliderStyle: HTMLStyleElement | null = null;
 let customSliderStyles: HTMLStyleElement | null = null;
 
+const volumeTextClass = "_toggleButton_809eee8";
 const volumeContainerId = "._sliderContainer_15490c0";
 const volumeLabel = "Volume";
 
 function updateSliderVolume(slider: HTMLInputElement, volume: number): void {
     slider.value = volume.toString();
     slider.style.setProperty("--volume-percentage", `${volume}%`);
-}
+    if (volumeText) {
+        volumeText.textContent = `${volume}`;
+    }
+};
 
 // Create the horizontal volume slider
 function createVolumeSlider(): HTMLInputElement {
@@ -27,11 +34,11 @@ function createVolumeSlider(): HTMLInputElement {
     slider.setAttribute("aria-label", volumeLabel);
     slider.setAttribute("title", volumeLabel);
 
-    slider.style.width = "96px";
+    slider.style.width = "86px";
     slider.style.gridColumn = "span 2";
     slider.style.appearance = "none";
     slider.style.cursor = "pointer";
-    slider.style.height = "4px";
+    slider.style.height = "24px";
     slider.style.outline = "none";
 
     // Create styles for the slider thumb and track
@@ -73,12 +80,22 @@ function createVolumeSlider(): HTMLInputElement {
     });
 
     return slider;
-}
+};
 
 observePromise(unloads, volumeContainerId).then((volumeContainer) => {
     if (volumeSlider) return;
 
     volumeSlider = createVolumeSlider();
+    ToggleMouseWheelControl(settings.enableMouseWheel);
+    
+    // Volume text display element
+    volumeText = document.createElement('span');
+    volumeText.classList.add(volumeTextClass);
+    volumeText.style.minWidth = '36px';
+    volumeText.textContent = `${volumeSlider.value}`;
+    ToggleVolumeTextVisibility(settings.showVolumeText);
+
+    (volumeContainer as HTMLDivElement).after(volumeText);
     (volumeContainer as HTMLDivElement).after(volumeSlider);
 
     // Hide the default volume slider when hovering
@@ -102,9 +119,44 @@ observePromise(unloads, volumeContainerId).then((volumeContainer) => {
 // Remove the slider and restore default behavior on unload
 unloads.add(() => {
     volumeSlider?.remove();
+    volumeText?.remove();
     defaultSliderStyle?.remove();
     customSliderStyles?.remove();
     volumeSlider = null;
+    volumeText = null;
     defaultSliderStyle = null;
     customSliderStyles = null;
 });
+
+function handleMouseWheel(event: WheelEvent) {
+    if (!volumeSlider) return;
+    const step = 10;
+    const currentVolume = parseInt(volumeSlider.value);
+    let newVolume = currentVolume;
+
+    if (event.deltaY < 0) {
+        newVolume = Math.min(100, currentVolume + step);
+    } else {
+        newVolume = Math.max(0, currentVolume - step);
+    }
+
+    if (newVolume !== currentVolume) {
+        updateSliderVolume(volumeSlider, newVolume);
+        redux.actions["playbackControls/SET_VOLUME"]({ volume: newVolume });
+    }
+};
+
+//// Settings related functions 
+export function ToggleVolumeTextVisibility(checked?: boolean) {
+    if (!volumeText) return;
+    checked ? volumeText.style.removeProperty("display") : volumeText.style.display = "none";
+};
+
+export function ToggleMouseWheelControl(checked?: boolean) {
+    if (!volumeSlider) return;
+    if (checked) {
+        volumeSlider.addEventListener("wheel", handleMouseWheel);
+    } else {
+        volumeSlider.removeEventListener("wheel", handleMouseWheel);
+    }
+};
