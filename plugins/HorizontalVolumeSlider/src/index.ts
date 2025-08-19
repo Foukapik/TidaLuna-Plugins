@@ -38,7 +38,7 @@ function createVolumeSlider(): HTMLInputElement {
     slider.style.gridColumn = "span 2";
     slider.style.appearance = "none";
     slider.style.cursor = "pointer";
-    slider.style.height = "4px";
+    slider.style.height = "24px";
     slider.style.outline = "none";
 
     // Create styles for the slider thumb and track
@@ -77,6 +77,24 @@ function createVolumeSlider(): HTMLInputElement {
         const volume = parseInt((e.target as HTMLInputElement).value);
         updateSliderVolume(slider, volume);
         redux.actions["playbackControls/SET_VOLUME"]({ volume });
+    });
+
+    // Change volume with mouse wheel
+    slider.addEventListener("wheel", (e) => {
+        const step = 10;
+        const currentVolume = parseInt(slider.value);
+        let newVolume = currentVolume;
+
+        if (e.deltaY < 0) {
+            newVolume = Math.min(100, currentVolume + step);
+        } else {
+            newVolume = Math.max(0, currentVolume - step);
+        }
+
+        if (newVolume !== currentVolume) {
+            updateSliderVolume(slider, newVolume);
+            redux.actions["playbackControls/SET_VOLUME"]({ volume: newVolume });
+        }
     });
 
     return slider;
