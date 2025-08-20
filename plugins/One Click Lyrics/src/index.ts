@@ -20,6 +20,8 @@ const lyricsLabel = "Lyrics";
 const lyricsNotAvailableLabel = "No lyrics available";
 const buttonId = "oneClickLyricsButton";
 const volumeContainerId = "._sliderContainer_15490c0";
+const syncLyricsButtonClass = "._button_84b8ffe";
+const lyricsTabId = "[data-test='tabs-lyrics']"
 
 observePromise(unloads, volumeContainerId).then(async (volumeContainer) => {
     if (!volumeContainer || addedElement) return;
@@ -47,13 +49,19 @@ function createButton(): HTMLButtonElement {
 
     // Set the onclick action: open the song details, then click on the lyrics tab
     wrapper.addEventListener("click", () => {
-        const bottomBar = document.querySelector('#footerPlayer');
+        const bottomBar = document.querySelector("#footerPlayer");
         if (!bottomBar) return;
         
         (bottomBar as HTMLElement).click();
-        observePromise(unloads, '[data-test="tabs-lyrics"]', 2000).then((lyricsTab) => {
+        observePromise(unloads, lyricsTabId, 1000).then((lyricsTab) => {
             if (lyricsTab) {
                 (lyricsTab as HTMLElement).click();
+                // Click the sync lyrics button if the lyrics are not synced
+                observePromise(unloads, syncLyricsButtonClass, 1000).then((syncButton) => {
+                    if (syncButton) {
+                        (syncButton as HTMLButtonElement).click();
+                    }
+                });
             }
         });
     });
