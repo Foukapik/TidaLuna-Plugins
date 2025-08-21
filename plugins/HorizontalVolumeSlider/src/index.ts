@@ -6,7 +6,7 @@ export const { errSignal, trace } = Tracer("[HorizontalVolumeSlider]");
 export const unloads = new Set<LunaUnload>();
 export { Settings };
 
-let volumeText: HTMLSpanElement | null = null;
+let volumeText: HTMLInputElement | null = null;
 let volumeSlider: HTMLInputElement | null = null;
 let defaultSliderStyle: HTMLStyleElement | null = null;
 let customSliderStyles: HTMLStyleElement | null = null;
@@ -15,11 +15,56 @@ const volumeTextClass = "_toggleButton_809eee8";
 const volumeContainerId = "._sliderContainer_15490c0";
 const volumeLabel = "Volume";
 
+function createVolumeInput(): HTMLInputElement {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.classList.add(volumeTextClass);
+    input.maxLength = 3;
+    
+    // Style the input
+    input.style.minWidth = '36px';
+    input.style.border = 'none';
+    input.style.color = 'white';
+    input.style.textAlign = 'center';
+    input.style.cursor = 'text';
+    input.style.outline = 'none';
+
+    // Input validation handlers
+    input.addEventListener('keypress', (e) => {
+        if (!/^\d$/.test(e.key) && e.key !== 'Enter') {
+            e.preventDefault();
+        }
+    });
+
+    input.addEventListener('paste', (e) => {
+        const pasteData = e.clipboardData?.getData('text') || '';
+        if (!/^\d+$/.test(pasteData)) {
+            e.preventDefault();
+        }
+    });
+
+    input.addEventListener('change', (e) => {
+        const value = (e.target as HTMLInputElement).value;
+        const volume = Math.max(0, Math.min(100, parseInt(value) || 0));
+        if (volumeSlider) {
+            updateSliderVolume(volumeSlider, volume);
+            redux.actions["playbackControls/SET_VOLUME"]({ volume });
+        }
+        input.value = volume.toString();
+    });
+
+    input.addEventListener('wheel', (e) => {
+        e.preventDefault();
+    });
+
+    return input;
+}
+
 function updateSliderVolume(slider: HTMLInputElement, volume: number): void {
     slider.value = volume.toString();
     slider.style.setProperty("--volume-percentage", `${volume}%`);
     if (volumeText) {
-        volumeText.textContent = `${volume}`;
+        volumeText.value = volume.toString();
     }
 };
 
@@ -89,10 +134,9 @@ observePromise(unloads, volumeContainerId).then((volumeContainer) => {
     ToggleMouseWheelControl(settings.enableMouseWheel);
     
     // Volume text display element
-    volumeText = document.createElement('span');
-    volumeText.classList.add(volumeTextClass);
-    volumeText.style.minWidth = '36px';
-    volumeText.textContent = `${volumeSlider.value}`;
+    volumeText = createVolumeInput();
+    volumeText.value = volumeSlider.value;
+    
     ToggleVolumeTextVisibility(settings.showVolumeText);
 
     (volumeContainer as HTMLDivElement).after(volumeText);
