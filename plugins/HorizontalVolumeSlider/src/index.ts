@@ -174,7 +174,7 @@ unloads.add(() => {
 
 function handleMouseWheel(event: WheelEvent) {
     if (!volumeSlider) return;
-    const step = 10;
+    const step = event.shiftKey ? settings.changeByShift : settings.changeBy;
     const currentVolume = parseInt(volumeSlider.value);
     let newVolume = currentVolume;
 
