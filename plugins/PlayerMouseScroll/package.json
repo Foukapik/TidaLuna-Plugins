@@ -1,0 +1,11 @@
+{
+	"name": "@foukapik/PlayerMouseScroll",
+	"description": "Scroll to rewind/fast-forward the song on the player",
+	"author": {
+		"name": "Foukapik",
+		"url": "https://github.com/Foukapik",
+		"avatarUrl": "https://avatars.githubusercontent.com/u/56433107"
+	},
+	"main": "./src/index.ts",
+	"type": "module"
+}
