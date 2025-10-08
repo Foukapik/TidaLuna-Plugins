@@ -1,6 +1,6 @@
 {
-	"name": "@foukapik/PlayerMouseScroll",
-	"description": "Scroll to rewind/fast-forward the song on the player",
+	"name": "@foukapik/PlayerKeyScroller",
+	"description": "Press shift+arrow key to rewind/fast-forward the song on the player",
 	"author": {
 		"name": "Foukapik",
 		"url": "https://github.com/Foukapik",

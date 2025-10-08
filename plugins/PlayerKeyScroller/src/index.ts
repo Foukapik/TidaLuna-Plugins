@@ -2,35 +2,34 @@ import { Tracer, type LunaUnload } from "@luna/core";
 import { MediaItem, redux, observePromise, PlayState } from "@luna/lib";
 import { settings, Settings } from "./Settings";
 
-export const { errSignal, trace } = Tracer("[PlayerMouseScroll]");
+export const { errSignal, trace } = Tracer("[PlayerKeyScroller]");
 export const unloads = new Set<LunaUnload>();
 export { Settings };
 
-let playerProgressBar: HTMLDivElement | null = null;
-const playerProgressBarClass = "._interactionLayer_ca5d470";
+let initialized = false;
 
-async function handleMouseWheel(event: WheelEvent) {
-    if (!playerProgressBar) return;
+async function handleKeyDown(event: KeyboardEvent) {
+    if (!event.shiftKey) return;
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
 
     const mediaItem = await MediaItem.fromPlaybackContext();
     if (!mediaItem) return;
 
     const songDuration = mediaItem.duration;
     if (!songDuration) return;
-    
-    const step = event.shiftKey ? settings.changeByShift : settings.changeBy;
+
+    const step = settings.changeBy;
     const currentPlaybackTime = PlayState.playTime;
     let newPlaybackTime = currentPlaybackTime;
 
-    if (event.deltaY < 0) {
+    if (event.key === 'ArrowRight') {
         newPlaybackTime = Math.min(songDuration, currentPlaybackTime + step);
     } else {
         newPlaybackTime = Math.max(0, currentPlaybackTime - step);
     }
 
-    // Prevent skipping the song when scrolling to the very end
-    if (newPlaybackTime === songDuration)
-    {
+    // Prevent skipping the song when jumping to the very end
+    if (newPlaybackTime === songDuration) {
         newPlaybackTime = songDuration - 1;
         redux.actions["playbackControls/PAUSE"]();
     }
@@ -39,12 +38,17 @@ async function handleMouseWheel(event: WheelEvent) {
     redux.actions["playbackControls/TIME_UPDATE"](newPlaybackTime);
 };
 
-observePromise(unloads, playerProgressBarClass).then(async (progressBar) => {
-    playerProgressBar = progressBar as HTMLDivElement;
-    await playerProgressBar.addEventListener("wheel", handleMouseWheel);
+function initializeKeyboardControls() {
+    if (initialized) return;
+    document.addEventListener('keydown', handleKeyDown);
+    initialized = true;
+}
+
+observePromise(unloads, "body").then(() => {
+    initializeKeyboardControls();
 });
 
-unloads.add(async () => {
-    if (!playerProgressBar) return;
-    await playerProgressBar.removeEventListener("wheel", handleMouseWheel);
+unloads.add(() => {
+    document.removeEventListener('keydown', handleKeyDown);
+    initialized = false;
 });
