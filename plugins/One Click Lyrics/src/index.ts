@@ -52,7 +52,10 @@ function createButton(): HTMLButtonElement {
         const bottomBar = document.querySelector("#footerPlayer");
         if (!bottomBar) return;
         
-        (bottomBar as HTMLElement).click();
+        // Don't toggle the "currently playing" view if it's already open
+        if (!bottomBar.classList.contains("nowPlayingVisible")) {
+            (bottomBar as HTMLElement).click();
+        }
         observePromise(unloads, lyricsTabId, 1000).then((lyricsTab) => {
             if (lyricsTab) {
                 (lyricsTab as HTMLElement).click();
