@@ -19,11 +19,11 @@ let addedElement: HTMLButtonElement | null = null;
 const lyricsLabel = "Lyrics";
 const lyricsNotAvailableLabel = "No lyrics available";
 const buttonId = "oneClickLyricsButton";
-const volumeContainerId = "._sliderContainer_15490c0";
-const syncLyricsButtonClass = "._button_84b8ffe";
+const volumeContainerId = "[class*='_sliderContainer']";
+const syncLyricsButtonClass = "[aria-label='Sync Lyrics']";
 const lyricsTabId = "[data-test='tabs-lyrics']"
 
-observePromise(unloads, volumeContainerId).then(async (volumeContainer) => {
+observePromise(unloads, volumeContainerId, 3000).then(async (volumeContainer) => {
     if (!volumeContainer || addedElement) return;
 
     addedElement = createButton();

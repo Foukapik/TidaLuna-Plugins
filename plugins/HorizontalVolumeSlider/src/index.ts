@@ -12,7 +12,7 @@ let defaultSliderStyle: HTMLStyleElement | null = null;
 let customSliderStyles: HTMLStyleElement | null = null;
 
 const volumeTextClass = "_toggleButton_809eee8";
-const volumeContainerId = "._sliderContainer_15490c0";
+const volumeContainerId = "[class*='_sliderContainer']";
 const volumeLabel = "Volume";
 
 function createVolumeInput(): HTMLInputElement {
@@ -127,7 +127,7 @@ function createVolumeSlider(): HTMLInputElement {
     return slider;
 };
 
-observePromise(unloads, volumeContainerId).then((volumeContainer) => {
+observePromise(unloads, volumeContainerId, 3000).then((volumeContainer) => {
     if (volumeSlider) return;
 
     volumeSlider = createVolumeSlider();
