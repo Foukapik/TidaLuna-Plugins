@@ -51,8 +51,14 @@ function createButton(): HTMLButtonElement {
     wrapper.addEventListener("click", () => {
         const bottomBar = document.querySelector("#footerPlayer");
         if (!bottomBar) return;
+
+        // Close the "currently playing" view the lyrics tab is already opened
+        const lyricsTabIsOpened = bottomBar.classList.contains("nowPlayingVisible") && document.querySelector(lyricsTabId)?.ariaSelected === "true";
+        if (lyricsTabIsOpened) {
+            (bottomBar as HTMLElement).click();
+            return;
+        }
         
-        // Don't toggle the "currently playing" view if it's already open
         if (!bottomBar.classList.contains("nowPlayingVisible")) {
             (bottomBar as HTMLElement).click();
         }
