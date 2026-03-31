@@ -20,8 +20,8 @@ const lyricsLabel = "Lyrics";
 const lyricsNotAvailableLabel = "No lyrics available";
 const buttonId = "oneClickLyricsButton";
 const volumeContainerId = "[class*='_sliderContainer']";
-const syncLyricsButtonClass = "[aria-label='Sync Lyrics']";
-const lyricsTabId = "[data-test='tabs-lyrics']"
+const syncLyricsButtonClass = "[data-test='lyrics-sync-button']";
+const lyricsTabId = "[data-test='toggle-lyrics']";
 
 observePromise(unloads, volumeContainerId, 3000).then(async (volumeContainer) => {
     if (!volumeContainer || addedElement) return;
@@ -53,7 +53,7 @@ function createButton(): HTMLButtonElement {
         if (!bottomBar) return;
 
         // Close the "currently playing" view the lyrics tab is already opened
-        const lyricsTabIsOpened = bottomBar.classList.contains("nowPlayingVisible") && document.querySelector(lyricsTabId)?.ariaSelected === "true";
+        const lyricsTabIsOpened = bottomBar.classList.contains("nowPlayingVisible") && document.querySelector(lyricsTabId)?.ariaPressed === "true";
         if (lyricsTabIsOpened) {
             (bottomBar as HTMLElement).click();
             return;
@@ -63,7 +63,7 @@ function createButton(): HTMLButtonElement {
             (bottomBar as HTMLElement).click();
         }
         observePromise(unloads, lyricsTabId, 1000).then((lyricsTab) => {
-            if (lyricsTab) {
+            if (lyricsTab && lyricsTab.ariaPressed === "false") {
                 (lyricsTab as HTMLElement).click();
                 // Click the sync lyrics button if the lyrics are not synced
                 observePromise(unloads, syncLyricsButtonClass, 1000).then((syncButton) => {
@@ -78,8 +78,6 @@ function createButton(): HTMLButtonElement {
     // Create the svg icon
     const lyricsIcon = document.createElement("div");
     lyricsIcon.innerHTML = icon;
-    lyricsIcon.style.width = "32px";
-    lyricsIcon.style.height = "32px";
     wrapper.appendChild(lyricsIcon);
     return wrapper;
 };
