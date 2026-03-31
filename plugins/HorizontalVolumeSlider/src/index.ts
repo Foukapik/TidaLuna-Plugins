@@ -11,23 +11,22 @@ let volumeSlider: HTMLInputElement | null = null;
 let defaultSliderStyle: HTMLStyleElement | null = null;
 let customSliderStyles: HTMLStyleElement | null = null;
 
-const volumeTextClass = "_toggleButton_809eee8";
 const volumeContainerId = "[class*='_sliderContainer']";
 const volumeLabel = "Volume";
 
 function createVolumeInput(): HTMLInputElement {
     const input = document.createElement('input');
     input.type = 'text';
-    input.classList.add(volumeTextClass);
     input.maxLength = 3;
     
     // Style the input
-    input.style.minWidth = '36px';
+    input.style.minWidth = '28px';
+    input.style.maxWidth = '28px';
     input.style.border = 'none';
     input.style.color = 'white';
     input.style.textAlign = 'center';
-    input.style.cursor = 'text';
     input.style.outline = 'none';
+    input.style.background = 'transparent';
 
     // Input validation handlers
     input.addEventListener('keypress', (e) => {
