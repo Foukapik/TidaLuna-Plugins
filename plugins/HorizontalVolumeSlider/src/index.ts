@@ -144,7 +144,7 @@ observePromise(unloads, volumeContainerId, 3000).then((volumeContainer) => {
     // Hide the default volume slider when hovering
     defaultSliderStyle = document.createElement("style");
     defaultSliderStyle.textContent = `
-        ._nativeRange_9da520a { 
+        ._nativeRange_7e12413 { 
             display: none !important; 
         }
     `;
